@@ -1,5 +1,6 @@
 import 'package:errandbuddy/firebase_options.dart';
 import 'package:errandbuddy/providers/member_provider.dart';
+import 'package:errandbuddy/providers/task_provider.dart';
 
 import 'package:errandbuddy/view/screens/onboarding_screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +21,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => MemberProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => MemberProvider()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Errand Buddy',

@@ -23,7 +23,11 @@ class MembersScreen extends StatelessWidget {
         ).fetchMembers(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Color.fromARGB(255, 5, 109, 109),
+              ),
+            );
           }
 
           return Consumer<MemberProvider>(
