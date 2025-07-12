@@ -51,9 +51,9 @@ class MembersScreen extends StatelessWidget {
                     return MemberCard(
                       imagePath: imagePath,
                       name: member.name,
-                      assigned: 0, // or fetch real data later
-                      overdue: 0,
-                      completed: 0,
+                      assigned: member.assigned, // Now showing real data
+                      overdue: member.overdue, // Now showing real data
+                      completed: member.completed, // Now showing real data
                     );
                   },
                 ),

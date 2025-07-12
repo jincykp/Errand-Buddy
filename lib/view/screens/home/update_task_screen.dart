@@ -7,24 +7,36 @@ import 'package:errandbuddy/view/widgets/section_label.dart';
 import 'package:errandbuddy/model/member_model.dart';
 import 'package:errandbuddy/model/task_model.dart';
 
-class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+class EditTaskScreen extends StatefulWidget {
+  final Task task;
+
+  const EditTaskScreen({super.key, required this.task});
 
   @override
-  State<AddTaskScreen> createState() => _AddTaskScreenState();
+  State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
 
-class _AddTaskScreenState extends State<AddTaskScreen> {
-  String selectedPriority = 'High';
+class _EditTaskScreenState extends State<EditTaskScreen> {
+  late String selectedPriority;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-
-  String selectedAssignee = '';
-  DateTime? selectedDate;
+  late TextEditingController _titleController;
+  late String selectedAssignee;
+  late DateTime selectedDate;
+  late bool isCompleted;
+  String originalAssignee = '';
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize with existing task data
+    _titleController = TextEditingController(text: widget.task.title);
+    selectedPriority = widget.task.priority;
+    selectedAssignee = widget.task.assignee;
+    originalAssignee = widget.task.assignee; // Keep track of original assignee
+    selectedDate = widget.task.dueDate;
+    isCompleted = widget.task.isCompleted;
+
     // Fetch members from Firestore
     Future.microtask(
       () => Provider.of<MemberProvider>(context, listen: false).fetchMembers(),
@@ -51,8 +63,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
@@ -75,7 +87,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
-  Future<void> _saveTask() async {
+  Future<void> _updateTask() async {
     if (_formKey.currentState!.validate()) {
       if (_titleController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,37 +103,45 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         return;
       }
 
-      if (selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a due date')),
-        );
-        return;
-      }
-
       try {
-        final task = Task(
+        final updatedTask = Task(
+          id: widget.task.id,
           title: _titleController.text.trim(),
           priority: selectedPriority,
           assignee: selectedAssignee,
-          dueDate: selectedDate!,
-          isCompleted: false,
-          createdAt: DateTime.now(),
+          dueDate: selectedDate,
+          isCompleted: isCompleted,
+          createdAt: widget.task.createdAt,
         );
 
-        // Add the task
-        await Provider.of<TaskProvider>(context, listen: false).addTask(task);
-
-        // Update member statistics for the assigned member
-        await Provider.of<MemberProvider>(
+        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+        final memberProvider = Provider.of<MemberProvider>(
           context,
           listen: false,
-        ).updateMemberStatistics(selectedAssignee);
+        );
+
+        // Update the task
+        await taskProvider.updateTask(updatedTask);
+
+        // Update member statistics for both original and new assignee (if changed)
+        if (originalAssignee != selectedAssignee) {
+          // Update original assignee's statistics
+          await memberProvider.updateMemberStatistics(originalAssignee);
+          // Update new assignee's statistics
+          await memberProvider.updateMemberStatistics(selectedAssignee);
+        } else {
+          // Update only the current assignee's statistics
+          await memberProvider.updateMemberStatistics(selectedAssignee);
+        }
 
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.pop(
+            context,
+            true,
+          ); // Return true to indicate task was updated
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Task added successfully'),
+              content: Text('Task updated successfully'),
               backgroundColor: Colors.green,
             ),
           );
@@ -130,7 +150,57 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Error adding task: $e')));
+          ).showSnackBar(SnackBar(content: Text('Error updating task: $e')));
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteTask() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Task'),
+        content: const Text('Are you sure you want to delete this task?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+        final memberProvider = Provider.of<MemberProvider>(
+          context,
+          listen: false,
+        );
+
+        await taskProvider.deleteTask(widget.task.id!);
+        await memberProvider.updateMemberStatistics(widget.task.assignee);
+
+        if (mounted) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Task deleted successfully'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error deleting task: $e')));
         }
       }
     }
@@ -148,10 +218,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           icon: const Icon(Icons.close),
         ),
         title: const Text(
-          "Add Task",
+          "Edit Task",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _deleteTask,
+            icon: const Icon(Icons.delete, color: Colors.red),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -162,6 +238,48 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Task Completion Status
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isCompleted ? Colors.green[50] : Colors.orange[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isCompleted ? Colors.green : Colors.orange,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isCompleted ? Icons.check_circle : Icons.pending,
+                        color: isCompleted ? Colors.green : Colors.orange,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isCompleted ? 'Task Completed' : 'Task Pending',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isCompleted ? Colors.green : Colors.orange,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: isCompleted,
+                        onChanged: (value) {
+                          setState(() {
+                            isCompleted = value;
+                          });
+                        },
+                        activeColor: Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
                 const SectionLabel(text: "Task Title"),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -176,6 +294,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
+
                 const SectionLabel(text: "Priority"),
                 const SizedBox(height: 8),
                 Row(
@@ -221,6 +340,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
+
                 const SectionLabel(text: "Assignee"),
                 const SizedBox(height: 8),
                 members.isEmpty
@@ -261,15 +381,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: InputDecorator(
                     decoration: customInputDecoration(),
                     child: Text(
-                      selectedDate != null
-                          ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                          : "Select date",
+                      "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
                       style: const TextStyle(color: Colors.black),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                CustomButton(text: 'Add Task', onPressed: _saveTask),
+                const SizedBox(height: 30),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        text: 'Update Task',
+                        onPressed: _updateTask,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

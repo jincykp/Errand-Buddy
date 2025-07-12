@@ -1,4 +1,5 @@
 import 'package:errandbuddy/view/screens/home/add_task_screen.dart';
+import 'package:errandbuddy/view/screens/home/update_task_screen.dart';
 import 'package:errandbuddy/view/widgets/custom_appbar.dart';
 import 'package:errandbuddy/view/widgets/custom_fab.dart';
 import 'package:errandbuddy/providers/task_provider.dart';
@@ -93,78 +94,91 @@ class _TasksScreenState extends State<TasksScreen> {
                       final imageIndex = index % taskImages.length;
                       final imagePath = taskImages[imageIndex];
 
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Right side content (Expanded first)
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    /// Priority
-                                    Text(
-                                      '${task.priority} Priority',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey,
-                                        fontSize: 14,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditTaskScreen(task: task),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Right side content (Expanded first)
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      /// Priority
+                                      Text(
+                                        '${task.priority} Priority',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 6),
+                                      const SizedBox(height: 6),
 
-                                    /// Task title
-                                    Text(
-                                      task.title,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                      /// Task title
+                                      Text(
+                                        task.title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
+                                      const SizedBox(height: 4),
 
-                                    Text(
-                                      "Due: ${formatDate(task.dueDate)}",
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
+                                      Text(
+                                        task.isCompleted
+                                            ? "Completed"
+                                            : "Due: ${formatDate(task.dueDate)}",
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              const SizedBox(width: 12),
+                                const SizedBox(width: 12),
 
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.asset(
-                                  imagePath,
-                                  width: 140,
-                                  height: 90,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey.shade200,
-                                      child: Icon(
-                                        Icons.task_alt,
-                                        color: Colors.grey.shade600,
-                                        size: 32,
-                                      ),
-                                    );
-                                  },
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.asset(
+                                    imagePath,
+                                    width: 140,
+                                    height: 90,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey.shade200,
+                                        child: Icon(
+                                          Icons.task_alt,
+                                          color: Colors.grey.shade600,
+                                          size: 32,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
