@@ -137,7 +137,7 @@ class _EscalationsScreenState extends State<EscalationsScreen> {
                             Text(
                               "Overdue by $overdueTime",
                               style: TextStyle(
-                                color: Colors.red.shade700,
+                                // color: Colors.red.shade700,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
