@@ -94,52 +94,54 @@ class _EscalationsScreenState extends State<EscalationsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title for escalated tasks
+                const Text(
+                  "Escalated Tasks",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
                 // Escalated tasks list
                 Expanded(
-                  child: ListView.builder(
+                  child: ListView.separated(
                     itemCount: escalatedTasks.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final task = escalatedTasks[index];
                       final overdueTime = calculateOverdueTime(task.dueDate);
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    task.title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                  children: [
-                                    TextSpan(
-                                      text: task.title,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const TextSpan(text: " - "),
-                                    TextSpan(
-                                      text:
-                                          "Originally assigned to ${task.assignee}",
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Overdue by $overdueTime",
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(height: 4),
                             Text(
-                              "Overdue by $overdueTime",
+                              "Originally assigned to ${task.assignee}",
                               style: TextStyle(
-                                // color: Colors.red.shade700,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                color: Colors.blueGrey.shade500,
+                                fontSize: 13,
                               ),
                             ),
                           ],
