@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/splash_img.png'),
-            const SizedBox(height: 20),
+
             const Text(
               'ERRAND BUDDY',
               style: TextStyle(
