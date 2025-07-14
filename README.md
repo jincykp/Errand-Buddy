@@ -1,16 +1,44 @@
-# errandbuddy
+Errand Buddy
 
-A new Flutter project.
+**Errand Buddy** is a shared task management Flutter application designed for households or roommates. It allows users to collaboratively manage daily errands, assign tasks, track progress, and escalate overdue tasks automatically.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+- Multi-user collaborative task management  
+- Task priority and due date system  
+- Automatic escalation of overdue tasks  
+- Member dashboard to manage household users  
+- Escalation log for accountability  
+- Onboarding flow with three visually aligned screens  
+- Firebase backend for real-time data storage  
+- State management using `Provider`  
+- Follows MVVM (Model-View-ViewModel) architecture  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠 Tech Stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Flutter**: Frontend framework  
+- **Provider**: State management  
+- **Firebase Firestore**: Backend database  
+- **MVVM Architecture**: Code separation and scalability  
+- **Figma Design Reference**:  
+  [🔗 View Design]([https://www.figma.com/design/I8YGMJhz5H5o3QcLHw5MQu/Skill-Test-Flutter?node-id=0-1&t=ZR0ix5DS8GqjcNaK-1](https://www.figma.com/design/I8YGMJhz5H5o3QcLHw5MQu/Skill-Test-Flutter?node-id=0-1&t=ZR0ix5DS8GqjcNaK-1))
+
+---
+
+## 📱 Screens Implemented
+
+1. Splash Screen  
+2. Onboarding Screens (1, 2 & 3)  
+3. Tasks Screen  
+4. Add Task Screen  
+5. Member Screen  
+6. Escalation Log Screen  
+
+---
+
+## 🧩 Architecture Overview (MVVM)
+
+- **Model**: Represents the data structure (e.g., TaskModel, MemberModel)  
+- **View**: UI layer (screens & widgets)  
+- **ViewModel**: Handles logic, connects view and model  
